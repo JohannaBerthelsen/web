@@ -24,10 +24,10 @@ export default function UserDashboard({ api }) {
   const [activeTab, setActiveTab] = useState(TABS_IDS.BAR_GRAPH);
   const [activeTimeInterval, setActiveTimeInterval] = useState(OPTIONS.WEEK);
   const [activeCustomTimeInterval, setActiveCustomTimeInterval] = useState(
-    PERIOD_OPTIONS.WEEK
+    PERIOD_OPTIONS.WEEK,
   );
   const [activeTimeFormatOption, setActiveTimeFormatOption] = useState(
-    ACTIVITY_TIME_FORMAT_OPTIONS.MINUTES
+    ACTIVITY_TIME_FORMAT_OPTIONS.MINUTES,
   );
   const [allWordsData, setAllWordsData] = useState(null);
   const [allWordsDataPerMonths, setAllWordsDataPerMonths] = useState({});
@@ -36,6 +36,7 @@ export default function UserDashboard({ api }) {
     useState(null);
   const [monthlyExerciseAndReadingTimes, setMonthlyExerciseAndReadingTimes] =
     useState({});
+  const [streak, setStreak] = useState(0);
 
   function handleChangeReferenceDate(newDate) {
     setReferenceDate(newDate);
@@ -45,45 +46,10 @@ export default function UserDashboard({ api }) {
   function handleActiveTabChange(tabId) {
     setActiveTab(tabId);
     api.logUserActivity(api.USER_DASHBOARD_TAB_CHANGE, "", tabId);
-  }
 
-  function calculateStreak(activityData) {
-    const today = new Date();
-    let streak = 0;
-  
-    // Get the activity keys (dates) and sort them in descending order (latest first)
-    const activityDates = Object.keys(activityData).sort((a, b) => new Date(b) - new Date(a));
-  
-    // Loop through the dates and check for consecutive days
-    for (let i = 0; i < activityDates.length; i++) {
-      const currentDay = new Date(activityDates[i]);
-  
-      // Check if it's the first date or the previous day was consecutive
-      if (i === 0) {
-        // If this is the first day, check if it matches today's date
-        const isToday = currentDay.toDateString() === today.toDateString();
-  
-        // If today is logged, start the streak, otherwise, break the loop
-        if (isToday) {
-          streak++;
-        } else {
-          break; // No streak if today isn't counted
-        }
-      } else {
-        const previousDay = new Date(activityDates[i - 1]);
-        const differenceInTime = previousDay - currentDay;
-        const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24); // Convert to days
-  
-        if (differenceInDays === 1) {
-          // If the previous day is exactly 1 day before, increment streak
-          streak++;
-        } else {
-          break; // Streak ends if there is a gap
-        }
-      }
-    }
-  
-    return streak;
+    api.getStreak((streakData) => {
+      setStreak(streakData.streak);
+    });
   }
 
   function handleActiveTimeIntervalChange(selected) {
@@ -94,12 +60,12 @@ export default function UserDashboard({ api }) {
       selected === OPTIONS.WEEK || selected === OPTIONS.CUSTOM_WEEK
         ? PERIOD_OPTIONS.WEEK
         : selected === OPTIONS.MONTH || selected === OPTIONS.CUSTOM_MONTH
-        ? PERIOD_OPTIONS.MONTH
-        : selected === OPTIONS.YEAR || selected === OPTIONS.CUSTOM_YEAR
-        ? PERIOD_OPTIONS.YEAR
-        : selected === OPTIONS.YEARS
-        ? PERIOD_OPTIONS.YEARS
-        : PERIOD_OPTIONS.WEEK;
+          ? PERIOD_OPTIONS.MONTH
+          : selected === OPTIONS.YEAR || selected === OPTIONS.CUSTOM_YEAR
+            ? PERIOD_OPTIONS.YEAR
+            : selected === OPTIONS.YEARS
+              ? PERIOD_OPTIONS.YEARS
+              : PERIOD_OPTIONS.WEEK;
 
     // if it's last week/month/year/years,
     //set the date to today's date and show time in minutes
@@ -132,6 +98,10 @@ export default function UserDashboard({ api }) {
   }, []);
 
   useEffect(() => {
+    api.getStreak((streakData) => {
+      setStreak(streakData.streak);
+    });
+
     api.getBookmarksCountsByDate((counts) => {
       var formatted = getMapData(counts);
 
@@ -144,7 +114,7 @@ export default function UserDashboard({ api }) {
       setDailyExerciseAndReadingTimes(activity);
 
       setMonthlyExerciseAndReadingTimes(
-        calculateCountPerMonth_Activity(activity)
+        calculateCountPerMonth_Activity(activity),
       );
     });
     // eslint-disable-next-line
@@ -176,7 +146,7 @@ export default function UserDashboard({ api }) {
               monthlyExerciseAndReadingTimes,
               activeCustomTimeInterval,
               referenceDate,
-              activeTimeFormatOption
+              activeTimeFormatOption,
             )}
             activeCustomTimeInterval={activeCustomTimeInterval}
             activeTimeFormatOption={activeTimeFormatOption}
@@ -187,7 +157,7 @@ export default function UserDashboard({ api }) {
               allWordsData,
               allWordsDataPerMonths,
               activeCustomTimeInterval,
-              referenceDate
+              referenceDate,
             )}
           />
         ) : (
