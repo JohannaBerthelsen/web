@@ -47,6 +47,45 @@ export default function UserDashboard({ api }) {
     api.logUserActivity(api.USER_DASHBOARD_TAB_CHANGE, "", tabId);
   }
 
+  function calculateStreak(activityData) {
+    const today = new Date();
+    let streak = 0;
+  
+    // Get the activity keys (dates) and sort them in descending order (latest first)
+    const activityDates = Object.keys(activityData).sort((a, b) => new Date(b) - new Date(a));
+  
+    // Loop through the dates and check for consecutive days
+    for (let i = 0; i < activityDates.length; i++) {
+      const currentDay = new Date(activityDates[i]);
+  
+      // Check if it's the first date or the previous day was consecutive
+      if (i === 0) {
+        // If this is the first day, check if it matches today's date
+        const isToday = currentDay.toDateString() === today.toDateString();
+  
+        // If today is logged, start the streak, otherwise, break the loop
+        if (isToday) {
+          streak++;
+        } else {
+          break; // No streak if today isn't counted
+        }
+      } else {
+        const previousDay = new Date(activityDates[i - 1]);
+        const differenceInTime = previousDay - currentDay;
+        const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24); // Convert to days
+  
+        if (differenceInDays === 1) {
+          // If the previous day is exactly 1 day before, increment streak
+          streak++;
+        } else {
+          break; // Streak ends if there is a gap
+        }
+      }
+    }
+  
+    return streak;
+  }
+
   function handleActiveTimeIntervalChange(selected) {
     setActiveTimeInterval(selected);
     api.logUserActivity(api.USER_DASHBOARD_PERIOD_CHANGE, "", selected);
@@ -126,6 +165,7 @@ export default function UserDashboard({ api }) {
         activeTimeFormatOption={activeTimeFormatOption}
         referenceDate={referenceDate}
         handleChangeReferenceDate={handleChangeReferenceDate}
+        calculateStreak={calculateStreak}
       />
 
       <s.NivoGraphContainer>

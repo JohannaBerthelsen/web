@@ -24,6 +24,10 @@ const TOP_TABS = {
   LINE_GRAPH: udstrings.tabWords,
 };
 
+const STREAK_MESSAGE ={
+  YOUR_STREAK: udstrings.streakText
+
+};
 const USER_DASHBOARD_TITLES = {
   MAIN_TITLE: udstrings.activity,
   BAR_GRAPH_TEXT: udstrings.helperTextActivity,
@@ -106,5 +110,6 @@ export {
   LINE_GRAPH_BOTTOM_LEGEND,
   DATE_FORMAT_FOR_DATEPICKER,
   TABS_IDS,
+  STREAK_MESSAGE,
   DEFAULT_MAX_VALUE_BAR_GRAPH,
 };
